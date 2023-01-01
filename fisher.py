@@ -101,6 +101,7 @@ def check_entry_condition():
     ema = df['ema'].iloc[-1]
     close = df['close'].iloc[-1]
     is_choppiness_decreasing = ta.sma(ta.decreasing(ta.ema(df['CHOP_14_1_100'])), 5).iloc[-1] == 1
+    super_trend_direction = ta.supertrend(low=historical_data['low'], close=historical_data['close'], high=historical_data['high']).iloc[-1]['SUPERTd_7_3.0']
 
     did_trade = False
     atm = get_atm(kite)
@@ -108,7 +109,7 @@ def check_entry_condition():
     ce_symbol = get_option_symbol(symbol, year, month, date, atm + 200, 'CE')
     pe_symbol = get_option_symbol(symbol, year, month, date, atm - 200, 'PE')
 
-    if (close > ema and transform > signal) and is_choppiness_decreasing:
+    if (close > ema and transform > signal) and is_choppiness_decreasing and super_trend_direction == 1:
         # short sell PE as it is a uptrend
         kite.place_order(
             variety=kite.VARIETY_REGULAR,
@@ -126,7 +127,7 @@ def check_entry_condition():
         entry_trend = 'UP'
 
         print(f"[x] entering {pe_symbol} trend: {entry_trend}")
-    elif (close < ema and transform < signal) and is_choppiness_decreasing:
+    elif (close < ema and transform < signal) and is_choppiness_decreasing and super_trend_direction == -1:
         # short sell CE as it is a downtrend
         kite.place_order(
             variety=kite.VARIETY_REGULAR,
