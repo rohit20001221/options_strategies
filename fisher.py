@@ -25,7 +25,7 @@ date = '5'
 should_enter = True
 entry_trend = None
 positions = set()
-nifty_token = 8972290
+nifty_token = 256265
 
 with open('./instruments.json', 'r') as f:
     instruments = json.loads(f.read())
