@@ -2,7 +2,9 @@ import json
 
 from broker.zerodha import KiteApp
 
-enctoken = "NyK9LPrRyMQ4j071yeNJbBT4ke1DxY/m3iPcvapAvw2nthjD/KqjBAx0n5bFmr+cxn/UyP/TxsNXylprM0uwI7dGR4fgEL//+Zn6GYIZ4Pdxmvy439egPA=="
+with open("auth.json", "r") as f:
+    enctoken = json.loads(f.read())["enctoken"]
+
 kite = KiteApp(enctoken=enctoken)
 
 instruments = kite.instruments()
