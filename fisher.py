@@ -38,6 +38,8 @@ _exit_conditions = {
 def check_exit_conditions():
     global should_enter, entry_trend, positions, nifty_token, instruments, symbol, year, month, date
 
+    print('[x] checking for exit condition')
+
     historical_data = kite.historical_data(
         nifty_token,
         from_date=datetime.date.today(),
@@ -65,6 +67,8 @@ def check_exit_conditions():
                 stoploss=None
             )
 
+            print(f"[x] exited {tradingsymbol}")
+
         should_enter = True
         entry_trend = None
 
@@ -76,6 +80,8 @@ def check_entry_condition():
         check_exit_conditions()
         return
 
+    print('[x] checking for entry condition')
+
     historical_data = kite.historical_data(
         nifty_token,
         from_date=datetime.date.today(),
@@ -86,6 +92,7 @@ def check_entry_condition():
 
     df = pd.DataFrame(historical_data)
     df.ta.fisher(append=True)
+    df.ta.chop(append=True)
     df['ema'] = ta.ema(df['close'], 100)
 
     # iloc[-1]
@@ -93,14 +100,15 @@ def check_entry_condition():
     signal = df['FISHERTs_9_1'].iloc[-1]
     ema = df['ema'].iloc[-1]
     close = df['close'].iloc[-1]
+    is_choppiness_decreasing = ta.sma(ta.decreasing(ta.ema(df['CHOP_14_1_100'])), 5).iloc[-1] == 1
 
     did_trade = False
     atm = get_atm(kite)
 
-    ce_symbol = get_option_symbol(symbol, year, month, date, atm, 'CE')
-    pe_symbol = get_option_symbol(symbol, year, month, date, atm, 'PE')
+    ce_symbol = get_option_symbol(symbol, year, month, date, atm + 200, 'CE')
+    pe_symbol = get_option_symbol(symbol, year, month, date, atm - 200, 'PE')
 
-    if close > ema and transform > signal:
+    if (close > ema and transform > signal) and is_choppiness_decreasing:
         # short sell PE as it is a uptrend
         kite.place_order(
             variety=kite.VARIETY_REGULAR,
@@ -116,7 +124,9 @@ def check_entry_condition():
         positions.add(pe_symbol)
         did_trade = True
         entry_trend = 'UP'
-    elif close < ema and transform < signal:
+
+        print(f"[x] entering {pe_symbol} trend: {entry_trend}")
+    elif (close < ema and transform < signal) and is_choppiness_decreasing:
         # short sell CE as it is a downtrend
         kite.place_order(
             variety=kite.VARIETY_REGULAR,
@@ -133,15 +143,18 @@ def check_entry_condition():
         did_trade = True
         entry_trend = 'DOWN'
 
+        print(f"[x] entering {ce_symbol} trend: {entry_trend}")
+
     if did_trade:
         should_enter = False
 
 
 
 def start_auto_trade():
+    print('[x] starting algo trade ...')
     schedule.every(1).minutes.do(check_entry_condition)
 
-schedule.every(1).day.at('09:15').do(start_auto_trade)
+schedule.every(1).day.at('09:20').do(start_auto_trade)
 
 while True:
     schedule.run_pending()

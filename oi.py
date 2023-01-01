@@ -100,7 +100,7 @@ def check_entry_condition():
 def start_auto_trade():
     schedule.every(1).minutes.do(check_entry_condition)
 
-schedule.every(1).day.at('09:15').do(start_auto_trade)
+schedule.every(1).day.at('09:20').do(start_auto_trade)
 
 while True:
     schedule.run_pending()
