@@ -42,7 +42,7 @@ def check_exit_conditions():
 
     historical_data = kite.historical_data(
         nifty_token,
-        from_date=datetime.date.today(),
+        from_date=datetime.date.today() - datetime.timedelta(weeks=1),
         to_date=datetime.date.today(),
         interval='5minute',
         oi=True,
@@ -84,7 +84,7 @@ def check_entry_condition():
 
     historical_data = kite.historical_data(
         nifty_token,
-        from_date=datetime.date.today(),
+        from_date=datetime.date.today() - datetime.timedelta(weeks=1),
         to_date=datetime.date.today(),
         interval='5minute',
         oi=True,
@@ -101,7 +101,7 @@ def check_entry_condition():
     ema = df['ema'].iloc[-1]
     close = df['close'].iloc[-1]
     is_choppiness_decreasing = ta.sma(ta.decreasing(ta.ema(df['CHOP_14_1_100'])), 5).iloc[-1] == 1
-    super_trend_direction = ta.supertrend(low=historical_data['low'], close=historical_data['close'], high=historical_data['high']).iloc[-1]['SUPERTd_7_3.0']
+    super_trend_direction = ta.supertrend(low=df['low'], close=df['close'], high=df['high']).iloc[-1]['SUPERTd_7_3.0']
 
     did_trade = False
     atm = get_atm(kite)
@@ -155,7 +155,7 @@ def start_auto_trade():
     print('[x] starting algo trade ...')
     schedule.every(1).minutes.do(check_entry_condition)
 
-schedule.every(1).day.at('09:20').do(start_auto_trade)
+schedule.every(1).day.at('09:33').do(start_auto_trade)
 
 while True:
     schedule.run_pending()
