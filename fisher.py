@@ -71,6 +71,7 @@ def check_exit_conditions():
 
         should_enter = True
         entry_trend = None
+        positions.clear()
 
 
 def check_entry_condition():
