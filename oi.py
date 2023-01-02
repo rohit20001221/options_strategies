@@ -17,7 +17,7 @@ kite = KiteApp(enctoken=enctoken)
 symbol = 'NIFTY'
 year = '23'
 month = '1'
-date = '5'
+date = '05'
 
 should_enter = True
 

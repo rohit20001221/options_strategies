@@ -19,7 +19,7 @@ kite = KiteApp(enctoken=enctoken)
 symbol = 'NIFTY'
 year = '23'
 month = '1'
-date = '5'
+date = '05'
 
 
 should_enter = True
@@ -155,7 +155,7 @@ def start_auto_trade():
     print('[x] starting algo trade ...')
     schedule.every(1).minutes.do(check_entry_condition)
 
-schedule.every(1).day.at('09:33').do(start_auto_trade)
+schedule.every(1).day.at('09:20').do(start_auto_trade)
 
 while True:
     schedule.run_pending()
