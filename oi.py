@@ -28,9 +28,9 @@ with open('./instruments.json', 'r') as f:
 
 trend = None
 
-_exit_slope = {
-    'UP': lambda ce, pe: pe - ce,
-    'DOWN': lambda ce, pe: ce - pe
+_exit_condition = {
+    'UP': lambda ce, pe: pe == 1 and ce == 0,
+    'DOWN': lambda ce, pe: ce == 1 and pe == 0
 }
 
 def check_exit_condition():
@@ -65,12 +65,10 @@ def check_exit_condition():
         return
 
     # trend in oi
-    ce_trend = ta.sma(ta.increasing(ta.ema(df_ce['oi'])), 5)
-    pe_trend = ta.sma(ta.increasing(ta.ema(df_pe['oi'])), 5)
+    ce_trend = ta.sma(ta.increasing(ta.ema(df_ce['oi'])), 5).iloc[-1]
+    pe_trend = ta.sma(ta.increasing(ta.ema(df_pe['oi'])), 5).iloc[-1]
 
-    # calculate the 2nd derative for exiting from the trade
-    _slope = ta.slope(ta.slope(_exit_slope[trend](ce_trend, pe_trend))).iloc[-1]
-    if _slope < 0:
+    if _exit_condition[trend](ce_trend, pe_trend):
         for tradingsymbol in positions:
             try:
                 kite.place_order(
@@ -90,7 +88,7 @@ def check_exit_condition():
     return
 
 def check_entry_condition():
-    global trend
+    global trend, should_enter
 
     if not(should_enter):
         check_exit_condition()
@@ -180,6 +178,7 @@ def check_entry_condition():
         should_enter = False
 
 def start_auto_trade():
+    print('[x] auto trade started')
     schedule.every(1).minutes.do(check_entry_condition)
 
 schedule.every(1).day.at('09:20').do(start_auto_trade)
